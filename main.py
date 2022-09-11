@@ -616,5 +616,4 @@ app.bind('<Control-e>', lambda event=None: text_alignment('center'))
 app.bind('<Control-r>', lambda event=None: text_alignment('right'))
 
 app.protocol("WM_DELETE_WINDOW", exit_app)  # app exit button function
-# app.iconphoto(False, icon_app)
 app.mainloop()
