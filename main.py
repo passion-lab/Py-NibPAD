@@ -5,6 +5,9 @@ import os
 
 # Global Variable
 APP_NAME: str = "NibPAD"
+APP_DIMENSION: tuple = (1200, 500)  # (width, height)
+COLOR_PRI: str = "#19bc9b"
+COLOR_SEC: str = "grey"  #808080
 PATH_ICON: str = "./icons/lined"
 FONT: dict = {
     "family"   : 'Consolas',
@@ -19,10 +22,41 @@ TEXT_MODIFIED: bool = False
 # Main Application
 app = tk.Tk()
 
-app.geometry('1200x500')
+_SCREEN_DIMENSION: tuple = (app.winfo_screenwidth(), app.winfo_screenheight())
+
+
+def _display_win_center(
+        window: tk.Tk | tk.Toplevel,
+        dimension: tuple[int, int],
+        parent_dimension: tuple[int, int] | None
+) -> str:
+    """
+    A function to display a window in the center of the screen.
+
+    :param window: A Tkinter window or top level window object/widget.
+    :type window: Tk() or Toplevel()
+    :param dimension: Window's dimension in width, height.
+    :type dimension: tuple(width: int, height: int)
+    :param parent_dimension: Parent window's dimension over which the current window will be placed
+    :type parent_dimension: tuple(width: int, height: int)
+    :return: Tkinter accepted string of "WidthxHeight+X+Y" dimensions and coordination
+    :rtype: str
+    """
+    if parent_dimension is None:
+        _x_coordination = int((window.winfo_screenwidth() / 2) - (dimension[0] / 2))
+        _y_coordination = int((window.winfo_screenheight() / 2) - (dimension[1] / 2))
+    else:
+        _x_coordination = int((parent_dimension[0] / 2) - (dimension[0] / 2))
+        _y_coordination = int((parent_dimension[1] / 2) - (dimension[1] / 2))
+
+    return f"{dimension[0]}x{dimension[1]}+{_x_coordination}+{_y_coordination}"
+
+
+app.geometry(f'{APP_DIMENSION[0]}x{APP_DIMENSION[1]}')
 app.wm_iconbitmap("./NibPAD.ico")
 # app.wm_iconphoto(False, tk.PhotoImage(file=f'{PATH_ICON}/../NibPAD.png'))
 app.title(APP_NAME)  # + to be improved
+# app.overrideredirect(True)
 
 # \\\ Main Menu         \\\\\\\\\\\\________________________________
 app_menu = tk.Menu()
@@ -51,6 +85,9 @@ icon_theme_dark = tk.PhotoImage(file=f'{PATH_ICON}/../dark.png')
 icon_theme_red = tk.PhotoImage(file=f'{PATH_ICON}/../red.png')
 icon_theme_monokai = tk.PhotoImage(file=f'{PATH_ICON}/../monokai.png')
 icon_theme_night_blue = tk.PhotoImage(file=f'{PATH_ICON}/../night_blue.png')
+# - Menu icons for HELP
+icon_about = tk.PhotoImage(file=f'{PATH_ICON}/about.png')
+icon_acknowledge = tk.PhotoImage(file=f'{PATH_ICON}/acknowledge.png')
 # - Tool bar icons
 icon_bold = tk.PhotoImage(file=f'{PATH_ICON}/bold.png')
 icon_italic = tk.PhotoImage(file=f'{PATH_ICON}/italic.png')
@@ -59,6 +96,17 @@ icon_font_color = tk.PhotoImage(file=f'{PATH_ICON}/font_color.png')
 icon_align_left = tk.PhotoImage(file=f'{PATH_ICON}/align_left.png')
 icon_align_center = tk.PhotoImage(file=f'{PATH_ICON}/align_center.png')
 icon_align_right = tk.PhotoImage(file=f'{PATH_ICON}/align_right.png')
+# - About icons
+icon_version = tk.PhotoImage(file=f"{PATH_ICON}/../about/version.png")
+icon_creator = tk.PhotoImage(file=f'{PATH_ICON}/../about/creator.png')
+icon_organization = tk.PhotoImage(file=f'{PATH_ICON}/../about/organization.png')
+icon_github = tk.PhotoImage(file=f'{PATH_ICON}/../about/github.png')
+icon_website = tk.PhotoImage(file=f'{PATH_ICON}/../about/website.png')
+icon_mail = tk.PhotoImage(file=f'{PATH_ICON}/../about/mail.png')
+icon_share = tk.PhotoImage(file=f'{PATH_ICON}/../about/share.png')
+icon_telegram = tk.PhotoImage(file=f'{PATH_ICON}/../about/telegram.png')
+icon_whatsapp = tk.PhotoImage(file=f'{PATH_ICON}/../about/whatsapp.png')
+icon_cc = tk.PhotoImage(file=f'{PATH_ICON}/../about/cc.png')
 
 
 # - FILE menu functions
@@ -141,8 +189,8 @@ def exit_app(event=None):
 file = tk.Menu(app_menu, tearoff=False)
 
 # -- commands
-file.add_command(label='New', image=icon_new, compound=tk.LEFT, accelerator='Ctrl+N', command=new_file)
-file.add_command(label='Open', image=icon_open, compound=tk.LEFT, accelerator='Ctrl+O', command=open_file)
+file.add_command(label='  New', image=icon_new, compound=tk.LEFT, accelerator='Ctrl+N', command=new_file)
+file.add_command(label='  Open', image=icon_open, compound=tk.LEFT, accelerator='Ctrl+O', command=open_file)
 file.add_separator()
 
 
@@ -152,7 +200,7 @@ def find_replace(event=None):
     dialog_box.iconphoto(True, icon_find)
     dialog_box.title("Find & Replace")
     dialog_box.geometry('450x200+400+200')
-    dialog_box.resizable(0, 0)
+    dialog_box.resizable(False, False)
 
     # Find function
     def find(e=None):
@@ -221,12 +269,14 @@ def find_replace(event=None):
 
     dialog_box.protocol("WM_DELETE_WINDOW", close)
     dialog_box.mainloop()
-file.add_command(label='Save', image=icon_save, compound=tk.LEFT, accelerator='Ctrl+S', command=save_file)
-file.add_command(label='Save as', image=icon_save_as, compound=tk.LEFT, accelerator='Ctrl+Shift+S', command=save_as)
+
+
+file.add_command(label='  Save', image=icon_save, compound=tk.LEFT, accelerator='Ctrl+S', command=save_file)
+file.add_command(label='  Save as', image=icon_save_as, compound=tk.LEFT, accelerator='Ctrl+Shift+S', command=save_as)
 file.add_separator()
 
 
-file.add_command(label='Exit', image=icon_exit, compound=tk.LEFT, accelerator='Ctrl+W', command=exit_app)
+file.add_command(label='  Exit', image=icon_exit, compound=tk.LEFT, accelerator='Ctrl+W', command=exit_app)
 # - EDIT menu functions
 
 
@@ -234,16 +284,16 @@ file.add_command(label='Exit', image=icon_exit, compound=tk.LEFT, accelerator='C
 edit = tk.Menu(app_menu, tearoff=False)
 
 # -- commands
-edit.add_command(label='Copy', image=icon_copy, compound=tk.LEFT, accelerator='Ctrl+C',
+edit.add_command(label='  Copy', image=icon_copy, compound=tk.LEFT, accelerator='Ctrl+C',
                  command=lambda: app_text_editor.event_generate('<Control c>'))
-edit.add_command(label='Cut', image=icon_cut, compound=tk.LEFT, accelerator='Ctrl+X',
+edit.add_command(label='  Cut', image=icon_cut, compound=tk.LEFT, accelerator='Ctrl+X',
                  command=lambda: app_text_editor.event_generate('<Control x>'))
-edit.add_command(label='Paste', image=icon_paste, compound=tk.LEFT, accelerator='Ctrl+V',
+edit.add_command(label='  Paste', image=icon_paste, compound=tk.LEFT, accelerator='Ctrl+V',
                  command=lambda: app_text_editor.event_generate('<Control v>'))
-edit.add_command(label='Clear', image=icon_clear, compound=tk.LEFT, accelerator='Ctrl+Del',
+edit.add_command(label='  Clear', image=icon_clear, compound=tk.LEFT, accelerator='Ctrl+Del',
                  command=lambda: app_text_editor.delete(1.0, tk.END))
 edit.add_separator()
-edit.add_command(label='Find', image=icon_find, compound=tk.LEFT, accelerator='Ctrl+F', command=find_replace)
+edit.add_command(label='  Find', image=icon_find, compound=tk.LEFT, accelerator='Ctrl+F', command=find_replace)
 
 # - VIEW functions
 show_toolbar = tk.BooleanVar()
@@ -280,9 +330,9 @@ def toggle_statusbar(event=None):
 view = tk.Menu(app_menu, tearoff=False)
 
 # -- check buttons
-view.add_checkbutton(label='Tool bar', image=icon_tool_bar, compound=tk.LEFT,
+view.add_checkbutton(label='  Tool bar', image=icon_tool_bar, compound=tk.LEFT,
                      onvalue=True, offvalue=False, variable=show_toolbar, command=toggle_toolbar)
-view.add_checkbutton(label='Status bar', image=icon_status_bar, compound=tk.LEFT,
+view.add_checkbutton(label='  Status bar', image=icon_status_bar, compound=tk.LEFT,
                      onvalue=True, offvalue=False, variable=show_statusbar, command=toggle_statusbar)
 
 # - THEME menu
@@ -316,14 +366,69 @@ def theme_changer():
 
 # -- radio buttons
 for index, item in enumerate(color_schemes):
-    theme.add_radiobutton(label=item, image=color_icons[index], compound=tk.LEFT,
+    theme.add_radiobutton(label="  " + item, image=color_icons[index], compound=tk.LEFT,
                           variable=selected_color_scheme, command=theme_changer)
+
+# - HELP menu
+help_option = tk.Menu(app_menu, tearoff=False)
+
+
+# --commands
+def about_app(event=None):
+    about_window = tk.Toplevel(app)
+    about_window.geometry(_display_win_center(about_window, (500, 320), (APP_DIMENSION[0], APP_DIMENSION[1])))
+    about_window.resizable(False, False)
+    about_window.overrideredirect(True)
+
+    def close(e=None):
+        app.attributes('-alpha', 1)
+        about_window.destroy()
+
+    frame = tk.Frame(about_window, bg="white")
+    frame.pack(fill=tk.BOTH, expand=True)
+
+    tk.Label(frame, text=APP_NAME,
+             font=("Arial Black", 22, "bold"), fg="grey", bg="#e8e8e8").pack(side=tk.TOP, fill=tk.BOTH, ipady=5)
+    tk.Label(frame, image=icon_app, bg="white").pack(side=tk.LEFT)
+
+    right_frame = tk.Frame(frame, bg="white")
+    right_frame.pack(side=tk.RIGHT, ipadx=30)
+    right_frame.columnconfigure(0, weight=1)
+    right_frame.columnconfigure(1, weight=3)
+
+    tk.Label(right_frame, bg="white", image=icon_version).grid(row=0, column=0, sticky="w")
+    tk.Label(right_frame, bg="white", text="1.0.0").grid(row=0, column=1, sticky="w")
+    tk.Label(right_frame, bg="white", image=icon_organization).grid(row=1, column=0, sticky="w")
+    tk.Label(right_frame, bg="white", text="Passion-Lab Inc.").grid(row=1, column=1, sticky="w")
+    tk.Label(right_frame, bg="white", text="Subhankar Samanta").grid(row=2, column=1, sticky="w")
+    tk.Label(right_frame, bg="white", image=icon_creator).grid(row=2, column=0, sticky="w")
+    tk.Label(right_frame, bg="white").grid(row=3, padx=1)
+    tk.Label(right_frame, bg="white", image=icon_github).grid(row=4, column=0, sticky="w")
+    tk.Label(right_frame, bg="white", cursor="hand2", text="@Passion-Lab").grid(row=4, column=1, sticky="w")
+    tk.Label(right_frame, bg="white", image=icon_website).grid(row=5, column=0, sticky="w")
+    tk.Label(right_frame, bg="white", cursor="hand2", text="github.com/nibpad.html").grid(row=5, column=1, sticky="w")
+    tk.Label(right_frame, bg="white", image=icon_mail).grid(row=6, column=0, sticky="w")
+    tk.Label(right_frame, bg="white", cursor="hand2", text="connect.subhankar@protonmail.com").grid(row=6, column=1, sticky="w")
+    tk.Label(right_frame, bg="white", image=icon_whatsapp).grid(row=7, column=0, sticky="w")
+    tk.Label(right_frame, bg="white", cursor="hand2", text="wa.me/...").grid(row=7, column=1, sticky="w")
+    tk.Label(right_frame, bg="white", image=icon_telegram).grid(row=8, column=0, sticky="w")
+    tk.Label(right_frame, bg="white", cursor="hand2", text="t.me/...").grid(row=8, column=1, sticky="w")
+
+    about_window.bind('<Escape>', close)
+    app.attributes('-alpha', 0.8)
+    about_window.mainloop()
+
+
+# -- options
+help_option.add_command(label="  About NibPAD", image=icon_about, compound=tk.LEFT, command=about_app, accelerator="F1")
+help_option.add_command(label="  Acknowledgement", image=icon_acknowledge, compound=tk.LEFT, accelerator="")
 
 # - cascade menus
 app_menu.add_cascade(label='File', menu=file)
 app_menu.add_cascade(label='Edit', menu=edit)
 app_menu.add_cascade(label='View', menu=view)
 app_menu.add_cascade(label='Themes', menu=theme)
+app_menu.add_cascade(label="Help", menu=help_option)
 
 # \\\ Toolbar           \\\\\\\\\\\\________________________________
 app_tool_bar = ttk.Frame(app)
@@ -384,20 +489,23 @@ align_right = ttk.Button(app_tool_bar, image=icon_align_right)
 align_right.grid(row=0, column=8, padx=7, pady=2)
 
 # \\\ Text Editor       \\\\\\\\\\\\________________________________
-app_text_editor = tk.Text(app)
-app_text_editor.config(wrap='word', font=(FONT['family'], FONT['size'], FONT['weight']))  # for word wrap
+app_text_editor = tk.Text(app, wrap='word', font=(FONT['family'], FONT['size'], FONT['weight']))
 app_text_editor.focus_set()  # for autofocus
+app_text_editor.pack(fill=tk.BOTH, expand=True)
 
 # - SCROLL BAR
-text_editor_scroll_bar = tk.Scrollbar(app)
+text_editor_scroll_bar = tk.Scrollbar(app_text_editor)
 text_editor_scroll_bar.pack(side=tk.RIGHT, fill=tk.Y)
-app_text_editor.pack(fill=tk.BOTH, expand=True)
 text_editor_scroll_bar.config(command=app_text_editor.yview)
 app_text_editor.config(yscrollcommand=text_editor_scroll_bar.set)
 
+
 # \\\ Status Bar        \\\\\\\\\\\\________________________________
-app_status_bar = tk.Label(app, text="Status Bar")
+app_status_bar = tk.Frame(app)
 app_status_bar.pack(side=tk.BOTTOM, fill=tk.X)
+
+writing_statistics = tk.Label(app_status_bar, text="Characters: 0 | Words: 0")
+writing_statistics.pack(side=tk.LEFT)
 
 
 def status_bar_update(event=None):
@@ -407,12 +515,13 @@ def status_bar_update(event=None):
     if app_text_editor.edit_modified():
         TEXT_MODIFIED = True
         characters = app_text_editor.get(1.0, 'end-1c')  # get text from 1st to last index excluding newline char
-        app_status_bar.configure(text=f'Characters: {len(characters)} | Words: {len(characters.split())}')
+        writing_statistics.configure(text=f'Characters: {len(characters)} | Words: {len(characters.split())}')
 
     app_text_editor.edit_modified(False)
 
 
 app_text_editor.bind('<<Modified>>', status_bar_update)
+
 
 # \\\ Toolbar Func      \\\\\\\\\\\\________________________________
 font_box.bind('<<ComboboxSelected>>',
@@ -498,6 +607,7 @@ app.bind('<Control-Shift-S>', save_as)
 app.bind('<Control-w>', exit_app)
 app.bind('<Control-Delete>', lambda event=None: app_text_editor.delete(1.0, tk.END))
 app.bind('<Control-f>', find_replace)
+app.bind('<F1>', about_app)
 app.bind('<Control-b>', lambda event=None: toggle_font_style('bold'))
 app.bind('<Control-i>', lambda event=None: toggle_font_style('italic'))
 app.bind('<Control-u>', lambda event=None: toggle_font_style('underline'))
