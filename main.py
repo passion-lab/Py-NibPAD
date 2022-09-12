@@ -1,14 +1,15 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import font, colorchooser, filedialog, messagebox
-import os
+
+from os import listdir, path, getcwd
 
 # Global Variable
 APP_NAME: str = "NibPAD"
 APP_DIMENSION: tuple = (1200, 500)  # (width, height)
 COLOR_PRI: str = "#19bc9b"
-COLOR_SEC: str = "grey"  #808080
-PATH_ICON: str = "./icons/lined"
+COLOR_SEC: str = "grey"  # 808080
+PATH_ICON: str = "./icons"
 FONT: dict = {
     "family"   : 'Consolas',
     "size"     : 12,
@@ -54,59 +55,34 @@ def _display_win_center(
 
 app.geometry(f'{APP_DIMENSION[0]}x{APP_DIMENSION[1]}')
 app.wm_iconbitmap("./NibPAD.ico")
-# app.wm_iconphoto(False, tk.PhotoImage(file=f'{PATH_ICON}/../NibPAD.png'))
 app.title(APP_NAME)  # + to be improved
-# app.overrideredirect(True)
 
 # \\\ Main Menu         \\\\\\\\\\\\________________________________
 app_menu = tk.Menu()
 
 # - App icon
-icon_app = tk.PhotoImage(file=f'{PATH_ICON}/../NibPAD.png')
-# - Menu icons for FILE
-icon_new = tk.PhotoImage(file=f'{PATH_ICON}/new.png')
-icon_open = tk.PhotoImage(file=f'{PATH_ICON}/open.png')
-icon_save = tk.PhotoImage(file=f'{PATH_ICON}/save.png')
-icon_save_as = tk.PhotoImage(file=f'{PATH_ICON}/save_as.png')
-icon_exit = tk.PhotoImage(file=f'{PATH_ICON}/exit.png')
-# - Menu icons for EDIT
-icon_copy = tk.PhotoImage(file=f'{PATH_ICON}/copy.png')
-icon_cut = tk.PhotoImage(file=f'{PATH_ICON}/cut.png')
-icon_paste = tk.PhotoImage(file=f'{PATH_ICON}/paste.png')
-icon_clear = tk.PhotoImage(file=f'{PATH_ICON}/clear_all.png')
-icon_find = tk.PhotoImage(file=f'{PATH_ICON}/find.png')
-# - Menu icons for VIEW
-icon_tool_bar = tk.PhotoImage(file=f'{PATH_ICON}/tool_bar.png')
-icon_status_bar = tk.PhotoImage(file=f'{PATH_ICON}/status_bar.png')
+icon_app = tk.PhotoImage(file=f'{PATH_ICON}/NibPAD.png')
+
+# - Menu icons
+icon_files_menu = [file for file in listdir(f'{PATH_ICON}/menu/')]
+icon_about, icon_acknowledge, icon_clear, icon_copy, icon_cut, icon_exit, icon_find, icon_help, icon_new, \
+    icon_open, icon_paste, icon_save, icon_save_as, icon_status_bar, icon_tool_bar \
+    = [tk.PhotoImage(file=f'{PATH_ICON}/menu/{file}') for file in icon_files_menu]
+
 # - Menu icons for THEME
-icon_theme_light_default = tk.PhotoImage(file=f'{PATH_ICON}/../light_default.png')
-icon_theme_light_plus = tk.PhotoImage(file=f'{PATH_ICON}/../light_plus.png')
-icon_theme_dark = tk.PhotoImage(file=f'{PATH_ICON}/../dark.png')
-icon_theme_red = tk.PhotoImage(file=f'{PATH_ICON}/../red.png')
-icon_theme_monokai = tk.PhotoImage(file=f'{PATH_ICON}/../monokai.png')
-icon_theme_night_blue = tk.PhotoImage(file=f'{PATH_ICON}/../night_blue.png')
-# - Menu icons for HELP
-icon_about = tk.PhotoImage(file=f'{PATH_ICON}/about.png')
-icon_acknowledge = tk.PhotoImage(file=f'{PATH_ICON}/acknowledge.png')
+icon_files_theme = [file for file in listdir(f'{PATH_ICON}/theme/')]
+icon_theme_dark, icon_theme_light_default, icon_theme_light_plus, icon_theme_monokai, icon_theme_night_blue, \
+    icon_theme_red = [tk.PhotoImage(file=f'{PATH_ICON}/theme/{file}') for file in icon_files_theme]
+
 # - Tool bar icons
-icon_bold = tk.PhotoImage(file=f'{PATH_ICON}/bold.png')
-icon_italic = tk.PhotoImage(file=f'{PATH_ICON}/italic.png')
-icon_underline = tk.PhotoImage(file=f'{PATH_ICON}/underline.png')
-icon_font_color = tk.PhotoImage(file=f'{PATH_ICON}/font_color.png')
-icon_align_left = tk.PhotoImage(file=f'{PATH_ICON}/align_left.png')
-icon_align_center = tk.PhotoImage(file=f'{PATH_ICON}/align_center.png')
-icon_align_right = tk.PhotoImage(file=f'{PATH_ICON}/align_right.png')
+icon_files_tool = [file for file in listdir(f'{PATH_ICON}/tool/')]
+icon_align_center, icon_align_left, icon_align_right, icon_bold, icon_font_color, icon_font_size, \
+    icon_italic, icon_underline = [tk.PhotoImage(file=f'{PATH_ICON}/tool/{file}') for file in icon_files_tool]
+
 # - About icons
-icon_version = tk.PhotoImage(file=f"{PATH_ICON}/../about/version.png")
-icon_creator = tk.PhotoImage(file=f'{PATH_ICON}/../about/creator.png')
-icon_organization = tk.PhotoImage(file=f'{PATH_ICON}/../about/organization.png')
-icon_github = tk.PhotoImage(file=f'{PATH_ICON}/../about/github.png')
-icon_website = tk.PhotoImage(file=f'{PATH_ICON}/../about/website.png')
-icon_mail = tk.PhotoImage(file=f'{PATH_ICON}/../about/mail.png')
-icon_share = tk.PhotoImage(file=f'{PATH_ICON}/../about/share.png')
-icon_telegram = tk.PhotoImage(file=f'{PATH_ICON}/../about/telegram.png')
-icon_whatsapp = tk.PhotoImage(file=f'{PATH_ICON}/../about/whatsapp.png')
-icon_cc = tk.PhotoImage(file=f'{PATH_ICON}/../about/cc.png')
+icon_files_about = [file for file in listdir(f'{PATH_ICON}/about/')]
+icon_cc, icon_creator, icon_github, icon_mail, icon_organization, icon_share, icon_telegram, icon_version, \
+    icon_website, icon_whatsapp = [tk.PhotoImage(file=f'{PATH_ICON}/about/{file}') for file in icon_files_about]
 
 
 # - FILE menu functions
@@ -119,13 +95,13 @@ def new_file(event=None):
 
 def open_file(event=None):
     global FILE_URL
-    FILE_URL = filedialog.askopenfilename(title="Select a file", initialdir=os.getcwd(),
+    FILE_URL = filedialog.askopenfilename(title="Select a file", initialdir=getcwd(),
                                           filetypes=(("Text Files (*.txt)", "*.txt"), ("All Files", "*.*")))
     try:
         with open(FILE_URL, 'r') as opened_file:
             app_text_editor.delete(1.0, 'end')
             app_text_editor.insert(1.0, opened_file.read())
-            app.title(f"{os.path.basename(FILE_URL)} - {APP_NAME}")
+            app.title(f"{path.basename(FILE_URL)} - {APP_NAME}")
     except FileNotFoundError:
         pass
     except:
@@ -140,14 +116,14 @@ def save_file(event=None):
         if FILE_URL:
             with open(FILE_URL, 'w', encoding='utf-8') as file_to_save:
                 file_to_save.write(text_content)
-                # app.title(os.path.basename(FILE_URL))
+                # app.title(path.basename(FILE_URL))
                 return True
         else:
             with filedialog.asksaveasfile(mode='w', defaultextension='*.txt',
                                           filetypes=(("Text Files (*.txt)", "*.txt"),
                                                      ("All Files", "*.*"))) as file_to_save:
                 file_to_save.write(text_content)
-                # app.title(os.path.basename(FILE_URL))
+                # app.title(path.basename(FILE_URL))
                 return True
     except:
         return False
@@ -159,7 +135,7 @@ def save_as(event=None):
                                       filetypes=(("Text Files (*.txt)", "*.txt"),
                                                  ("All Files", "*.*"))) as file_to_save:
             file_to_save.write(app_text_editor.get(1.0, tk.END))
-            # app.title(os.path.basename(str(file_to_save)))
+            # app.title(path.basename(str(file_to_save)))
             return True
     except:
         return False
@@ -274,7 +250,6 @@ def find_replace(event=None):
 file.add_command(label='  Save', image=icon_save, compound=tk.LEFT, accelerator='Ctrl+S', command=save_file)
 file.add_command(label='  Save as', image=icon_save_as, compound=tk.LEFT, accelerator='Ctrl+Shift+S', command=save_as)
 file.add_separator()
-
 
 file.add_command(label='  Exit', image=icon_exit, compound=tk.LEFT, accelerator='Ctrl+W', command=exit_app)
 # - EDIT menu functions
@@ -408,7 +383,8 @@ def about_app(event=None):
     tk.Label(right_frame, bg="white", image=icon_website).grid(row=5, column=0, sticky="w")
     tk.Label(right_frame, bg="white", cursor="hand2", text="github.com/nibpad.html").grid(row=5, column=1, sticky="w")
     tk.Label(right_frame, bg="white", image=icon_mail).grid(row=6, column=0, sticky="w")
-    tk.Label(right_frame, bg="white", cursor="hand2", text="connect.subhankar@protonmail.com").grid(row=6, column=1, sticky="w")
+    tk.Label(right_frame, bg="white", cursor="hand2", text="connect.subhankar@protonmail.com").grid(row=6, column=1,
+                                                                                                    sticky="w")
     tk.Label(right_frame, bg="white", image=icon_whatsapp).grid(row=7, column=0, sticky="w")
     tk.Label(right_frame, bg="white", cursor="hand2", text="wa.me/...").grid(row=7, column=1, sticky="w")
     tk.Label(right_frame, bg="white", image=icon_telegram).grid(row=8, column=0, sticky="w")
@@ -499,7 +475,6 @@ text_editor_scroll_bar.pack(side=tk.RIGHT, fill=tk.Y)
 text_editor_scroll_bar.config(command=app_text_editor.yview)
 app_text_editor.config(yscrollcommand=text_editor_scroll_bar.set)
 
-
 # \\\ Status Bar        \\\\\\\\\\\\________________________________
 app_status_bar = tk.Frame(app)
 app_status_bar.pack(side=tk.BOTTOM, fill=tk.X)
@@ -521,7 +496,6 @@ def status_bar_update(event=None):
 
 
 app_text_editor.bind('<<Modified>>', status_bar_update)
-
 
 # \\\ Toolbar Func      \\\\\\\\\\\\________________________________
 font_box.bind('<<ComboboxSelected>>',
