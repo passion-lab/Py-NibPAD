@@ -2,7 +2,9 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import font, colorchooser, filedialog, messagebox
 
+from webbrowser import open_new_tab
 from os import listdir, path, getcwd
+from json import load
 
 # Global Variable
 APP_NAME: str = "NibPAD"
@@ -10,6 +12,9 @@ APP_DIMENSION: tuple = (1200, 500)  # (width, height)
 COLOR_PRI: str = "#19bc9b"
 COLOR_SEC: str = "grey"  # 808080
 PATH_ICON: str = "./icons"
+with open('./contributors/contributors.json', 'r') as json_file:
+    CONTRIBUTORS: dict = load(json_file)
+
 FONT: dict = {
     "family"   : 'Consolas',
     "size"     : 12,
@@ -83,6 +88,13 @@ icon_align_center, icon_align_left, icon_align_right, icon_bold, icon_font_color
 icon_files_about = [file for file in listdir(f'{PATH_ICON}/about/')]
 icon_cc, icon_creator, icon_github, icon_mail, icon_organization, icon_share, icon_telegram, icon_version, \
     icon_website, icon_whatsapp = [tk.PhotoImage(file=f'{PATH_ICON}/about/{file}') for file in icon_files_about]
+
+# - Contributors icons
+icon_link = tk.PhotoImage(file=f'{PATH_ICON}/link.png')
+icon_contributors = []  # stores contributors' logo from below for loop
+for num, entry in enumerate(CONTRIBUTORS['thanks']):
+    globals()[f"icon{num}"] = tk.PhotoImage(file=f"./contributors{entry['logo']}")
+    icon_contributors.append(globals()[f"icon{num}"])
 
 
 # - FILE menu functions
@@ -395,9 +407,70 @@ def about_app(event=None):
     about_window.mainloop()
 
 
+def acknowledgement(event=None):
+    window = tk.Toplevel(app)
+    window.geometry(_display_win_center(window, (600, 320), (APP_DIMENSION[0], APP_DIMENSION[1])))
+    window.resizable(False, False)
+    window.overrideredirect(True)
+
+    def open_link(e=None):
+        pass
+
+    def close(e=None):
+        app.attributes('-alpha', 1)
+        window.destroy()
+
+    frame = tk.Frame(window, bg="white")
+    frame.pack(fill=tk.BOTH, expand=True)
+
+    tk.Label(frame, text="Special Thanks!",
+             font=("Arial Black", 22, "bold"), fg="grey", bg="white").grid(row=0, sticky="w", padx=30, pady=(20, 0))
+    tk.Label(frame, text=f"Acknowledging theme who made possible for 'Passion-Lab' to bring the {APP_NAME}...",
+             font=("Candara Light", 14), fg=COLOR_PRI, bg="white",
+             wraplength=500, justify="left").grid(row=1, sticky="w", padx=30, pady=1)
+
+    entry_frame = tk.Frame(frame, borderwidth=1, bg="white",
+                           highlightcolor=COLOR_PRI, highlightbackground=COLOR_PRI, highlightthickness=1)
+    # entry_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True, padx=30, pady=20)
+    entry_frame.grid(row=2, pady=20, padx=30, sticky="ew")
+
+    buttons = []
+    for i, thank in enumerate(CONTRIBUTORS['thanks']):
+        # reduces url length if defined total length exceeds
+        total_len = 70
+        if len(thank['for']) + len(thank['to']) + len(thank['url']) > total_len:
+            total_len -= (len(thank['for']) + len(thank['to']))
+            url_text = thank['url'][:total_len] + "..."
+        else:
+            url_text = thank['url']
+
+        # frames for rows each entry
+        globals()[f"row{i}"] = tk.Frame(entry_frame, background="white")
+        globals()[f"row{i}"].pack(side=tk.TOP, fill=tk.X)
+
+        # labels for each row
+        tk.Label(globals()[f"row{i}"], image=icon_contributors[i], fg="grey", bg="white").pack(side=tk.LEFT)
+        tk.Label(globals()[f"row{i}"], text=f"{thank['to']}", fg="black", bg="white").pack(side=tk.LEFT)
+        tk.Label(globals()[f"row{i}"], text=f"({thank['for']})", fg="darkgrey", bg="white").pack(side=tk.LEFT)
+        globals()[f"button{i}"] = tk.Label(globals()[f"row{i}"], image=icon_link, fg="grey", bg="white", cursor="hand2")
+        globals()[f"button{i}"].pack(side=tk.LEFT)
+        buttons.append((globals()[f"button{i}"], thank['url']))
+        tk.Label(globals()[f"row{i}"], text=f"{url_text}", fg="grey", bg="white", cursor="hand2").pack(side=tk.LEFT)
+
+    # TODO: Functions should be improved to open specific link on a specific button
+    # link opener events
+    for button in buttons:
+        print(button[0], button[1])
+        button[0].bind("<Button-1>", lambda e=None: open_new_tab(button[1]))
+
+    window.bind('<Escape>', close)
+    app.attributes('-alpha', 0.8)
+    window.mainloop()
+
+
 # -- options
 help_option.add_command(label="  About NibPAD", image=icon_about, compound=tk.LEFT, command=about_app, accelerator="F1")
-help_option.add_command(label="  Acknowledgement", image=icon_acknowledge, compound=tk.LEFT, accelerator="")
+help_option.add_command(label="  Acknowledgement", image=icon_acknowledge, compound=tk.LEFT, command=acknowledgement, accelerator="")
 
 # - cascade menus
 app_menu.add_cascade(label='File', menu=file)
