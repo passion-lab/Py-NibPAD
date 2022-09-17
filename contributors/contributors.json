@@ -1,0 +1,40 @@
+{
+  "thanks": [
+    {
+      "for": "Python",
+      "to": "CodeWithHarry",
+      "url": "https://www.youtube.com/watch?v=aqvDTCpNRek&list=PLu0W_9lII9agICnT8t4iYVSZ3eykIAOME",
+      "logo": "/logo/CodeWithHarry.png"
+    },
+    {
+      "for": "Program Concept",
+      "to": "Harshit Vashisth",
+      "url": "https://www.youtube.com/watch?v=wRIUnHO_6KY",
+      "logo": "/logo/Harshit vashisth.png"
+    },
+    {
+      "for": "Icons",
+      "to": "REMIX ICON",
+      "url": "https://www.remixicon.com",
+      "logo": "/logo/REMIX ICON.png"
+    },
+    {
+      "for": "Solutions to specific problems",
+      "to": "Stack Overflow",
+      "url": "https://www.stackoverflow.com/",
+      "logo": "/logo/Stack Overflow.png"
+    },
+    {
+      "for": "Problem solving",
+      "to": "GeeksforGeeks",
+      "url": "https://www.geeksforgeeks.org/",
+      "logo": "/logo/GeeksforGeeks.png"
+    },
+    {
+      "for": "Query resolving",
+      "to": "tutorialspoint",
+      "url": "https://www.tutorialspoint.com/index.htm",
+      "logo": "/logo/tutorialspoint.png"
+    }
+  ]
+}
