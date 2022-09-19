@@ -4,11 +4,14 @@ from tkinter import font, colorchooser, filedialog, messagebox
 
 from webbrowser import open_new_tab
 from os import listdir, path, getcwd
+from typing import Literal
+from configparser import ConfigParser
 from json import load
 
-# Global Variable
+# Global Variables
 APP_NAME: str = "NibPAD"
 APP_DIMENSION: tuple = (1200, 500)  # (width, height)
+APP_SETTINGS: str = "./settings.ini"
 COLOR_PRI: str = "#19bc9b"
 COLOR_SEC: str = "grey"  # 808080
 PATH_ICON: str = "./icons"
@@ -16,19 +19,33 @@ with open('./contributors/contributors.json', 'r') as json_file:
     CONTRIBUTORS: dict = load(json_file)
 
 FONT: dict = {
-    "family"   : 'Consolas',
-    "size"     : 12,
-    "weight"   : 'normal',
-    "slant"    : 'roman',
-    "underline": 'underline'
+    "family"    : 'Consolas',
+    "size"      : 12,
+    "weight"    : 'normal',
+    "slant"     : 'roman',
+    "underline" : False,
+    "overstrike": False
 }
 FILE_URL: str = ""
 TEXT_MODIFIED: bool = False
+CONFIG = ConfigParser()  # Loads user defined settings
+CONFIG.read(APP_SETTINGS)
 
 # Main Application
 app = tk.Tk()
 
+# App's Global Variables
 _SCREEN_DIMENSION: tuple = (app.winfo_screenwidth(), app.winfo_screenheight())
+
+
+# _FONT = font.Font(
+#     family=CONFIG.get("EDITOR", "font"),
+#     size=CONFIG.getint("EDITOR", "size"),
+#     weight=CONFIG.get("EDITOR", "weight"),
+#     slant=CONFIG.get("EDITOR", "slant"),
+#     underline=CONFIG.getboolean("EDITOR", "underline"),
+#     overstrike=CONFIG.getboolean("EDITOR", "overstrike")
+# )
 
 
 def _display_win_center(
@@ -71,29 +88,36 @@ icon_app = tk.PhotoImage(file=f'{PATH_ICON}/NibPAD.png')
 # - Menu icons
 icon_files_menu = [file for file in listdir(f'{PATH_ICON}/menu/')]
 icon_about, icon_acknowledge, icon_clear, icon_copy, icon_cut, icon_exit, icon_find, icon_help, icon_new, \
-    icon_open, icon_paste, icon_save, icon_save_as, icon_status_bar, icon_tool_bar \
+icon_open, icon_paste, icon_save, icon_save_as, icon_status_bar, icon_tool_bar \
     = [tk.PhotoImage(file=f'{PATH_ICON}/menu/{file}') for file in icon_files_menu]
 
 # - Menu icons for THEME
 icon_files_theme = [file for file in listdir(f'{PATH_ICON}/theme/')]
 icon_theme_dark, icon_theme_light_default, icon_theme_light_plus, icon_theme_monokai, icon_theme_night_blue, \
-    icon_theme_red = [tk.PhotoImage(file=f'{PATH_ICON}/theme/{file}') for file in icon_files_theme]
+icon_theme_red = [tk.PhotoImage(file=f'{PATH_ICON}/theme/{file}') for file in icon_files_theme]
 
 # - Tool bar icons
 icon_files_tool = [file for file in listdir(f'{PATH_ICON}/tool/')]
 icon_align_center, icon_align_left, icon_align_right, icon_bold, icon_font_color, icon_font_size, \
-    icon_italic, icon_underline = [tk.PhotoImage(file=f'{PATH_ICON}/tool/{file}') for file in icon_files_tool]
+icon_italic, icon_underline = [tk.PhotoImage(file=f'{PATH_ICON}/tool/{file}') for file in icon_files_tool]
 
 # - About icons
 icon_files_about = [file for file in listdir(f'{PATH_ICON}/about/')]
 icon_cc, icon_creator, icon_github, icon_mail, icon_organization, icon_share, icon_telegram, icon_version, \
-    icon_website, icon_whatsapp = [tk.PhotoImage(file=f'{PATH_ICON}/about/{file}') for file in icon_files_about]
+icon_website, icon_whatsapp = [tk.PhotoImage(file=f'{PATH_ICON}/about/{file}') for file in icon_files_about]
 
 # - Contributors icons
 icon_link = tk.PhotoImage(file=f'{PATH_ICON}/link.png')
+icon_love = tk.PhotoImage(file=f'{PATH_ICON}/love.png')
 icon_contributors = []  # stores contributors' logo from below for loop
 for num, entry in enumerate(CONTRIBUTORS['thanks']):
-    globals()[f"icon{num}"] = tk.PhotoImage(file=f"./contributors{entry['logo']}")
+    if entry['logo'] != "":
+        # loads logo path from the contributors.json file
+        globals()[f"icon{num}"] = tk.PhotoImage(file=f"./contributors{entry['logo']}")
+    else:
+        # sets default love icon for unavailable alias
+        globals()[f"icon{num}"] = icon_love
+    # updates the icon_contributors list with loaded logo variables
     icon_contributors.append(globals()[f"icon{num}"])
 
 
@@ -346,8 +370,25 @@ color_schemes = {
 }  # color scheme dictionary
 
 
-def theme_changer():
-    text_color, background_color = color_schemes[selected_color_scheme.get()]
+def theme_changer(predefined: tuple[str, str] | None = None):
+    """
+    Changes themes of the app.
+
+    :param predefined: Last used theme.
+    :type predefined: Tuple of foreground and background colors as tuple(str, str)
+    :return: Nothing.
+    :rtype: None
+    """
+    if predefined is None:
+        text_color, background_color = color_schemes[selected_color_scheme.get()[2:]]
+        # updates the settings file with the last user choice
+        CONFIG.set("THEME", "foreground", text_color)
+        CONFIG.set("THEME", "background", background_color)
+        with open(APP_SETTINGS, "w") as file:
+            CONFIG.write(file)
+    else:
+        text_color, background_color = predefined[0], predefined[1]
+
     app_text_editor.configure(foreground=text_color, background=background_color)
 
 
@@ -413,9 +454,6 @@ def acknowledgement(event=None):
     window.resizable(False, False)
     window.overrideredirect(True)
 
-    def open_link(e=None):
-        pass
-
     def close(e=None):
         app.attributes('-alpha', 1)
         window.destroy()
@@ -454,14 +492,15 @@ def acknowledgement(event=None):
         tk.Label(globals()[f"row{i}"], text=f"({thank['for']})", fg="darkgrey", bg="white").pack(side=tk.LEFT)
         globals()[f"button{i}"] = tk.Label(globals()[f"row{i}"], image=icon_link, fg="grey", bg="white", cursor="hand2")
         globals()[f"button{i}"].pack(side=tk.LEFT)
-        buttons.append((globals()[f"button{i}"], thank['url']))
+        # globals()[f"button{i}"].bind("<Button-1>", lambda e=None: open_new_tab(thank['url']))
+        buttons.append([globals()[f"button{i}"], thank['url']])
         tk.Label(globals()[f"row{i}"], text=f"{url_text}", fg="grey", bg="white", cursor="hand2").pack(side=tk.LEFT)
 
     # TODO: Functions should be improved to open specific link on a specific button
     # link opener events
     for button in buttons:
-        print(button[0], button[1])
-        button[0].bind("<Button-1>", lambda e=None: open_new_tab(button[1]))
+        pass
+        # button[0].bind("<Button-1>", lambda e=None: window.clipboard_append(button[1]))
 
     window.bind('<Escape>', close)
     app.attributes('-alpha', 0.8)
@@ -470,7 +509,8 @@ def acknowledgement(event=None):
 
 # -- options
 help_option.add_command(label="  About NibPAD", image=icon_about, compound=tk.LEFT, command=about_app, accelerator="F1")
-help_option.add_command(label="  Acknowledgement", image=icon_acknowledge, compound=tk.LEFT, command=acknowledgement, accelerator="")
+help_option.add_command(label="  Acknowledgement", image=icon_acknowledge, compound=tk.LEFT, command=acknowledgement,
+                        accelerator="")
 
 # - cascade menus
 app_menu.add_cascade(label='File', menu=file)
@@ -538,7 +578,14 @@ align_right = ttk.Button(app_tool_bar, image=icon_align_right)
 align_right.grid(row=0, column=8, padx=7, pady=2)
 
 # \\\ Text Editor       \\\\\\\\\\\\________________________________
-app_text_editor = tk.Text(app, wrap='word', font=(FONT['family'], FONT['size'], FONT['weight']))
+# app_text_editor = tk.Text(app, wrap='word', font=(FONT['family'], FONT['size'], FONT['weight']))
+app_text_editor = tk.Text(app, wrap='word', font=font.Font(
+    family=FONT['family'],
+    size=FONT['size'],
+    weight=FONT['weight'],
+    slant=FONT['slant'],
+    underline=FONT['underline']
+))
 app_text_editor.focus_set()  # for autofocus
 app_text_editor.pack(fill=tk.BOTH, expand=True)
 
@@ -570,14 +617,56 @@ def status_bar_update(event=None):
 
 app_text_editor.bind('<<Modified>>', status_bar_update)
 
+
 # \\\ Toolbar Func      \\\\\\\\\\\\________________________________
+
+def font_style(event=None,
+               which: Literal["family", "size", "weight", "slant", "underline", "overstrike"] = ...,
+               predefined: tuple[str, int, str, str, bool, bool] | None = None):
+    global FONT
+    print(FONT, "\n")
+    text_editor_current_font_properties = tk.font.Font(font=app_text_editor['font']).actual()
+
+    if predefined is not None:
+        FONT['family'], FONT['size'], FONT['weight'], FONT['slant'], FONT['underline'], \
+            FONT['overstrike'] = predefined
+    else:
+        match which:
+            case "family":
+                FONT['family'] = selected_font_family.get()
+                CONFIG.set("EDITOR", "family", selected_font_family.get())
+            case "size":
+                FONT['size'] = selected_font_size.get()
+                CONFIG.set("EDITOR", "size", str(selected_font_size.get()))
+            case "weight":
+                FONT['weight'] = "bold" if FONT['weight'] == "normal" else "normal"
+                CONFIG.set("EDITOR", "weight", FONT['weight'])
+            case "slant":
+                FONT['slant'] = "italic" if FONT['slant'] == "roman" else "roman"
+                CONFIG.set("EDITOR", "slant", FONT['slant'])
+            case "underline":
+                FONT['underline'] = True if FONT['underline'] is not True else False
+                CONFIG.set("EDITOR", "underline", str(FONT['underline']))
+            case "overstrike":
+                FONT['overstrike'] = True if FONT['overstrike'] is not True else False
+                CONFIG.set("EDITOR", "overstrike", str(FONT['overstrike']))
+
+        with open(APP_SETTINGS, "w") as file:
+            CONFIG.write(file)
+
+    app_text_editor.configure(font=font.Font(
+        font=FONT['family'], size=FONT['size'], weight=FONT['weight'], slant=FONT['slant'],
+        underline=FONT['underline'], overstrike=FONT['overstrike']
+    ))
+
+
 font_box.bind('<<ComboboxSelected>>',
               lambda event=None: app_text_editor.configure(font=(selected_font_family.get(),
                                                                  selected_font_size.get(), FONT['weight'])))
-font_size_box.bind('<<ComboboxSelected>>',
-                   lambda event=None: app_text_editor.configure(font=(selected_font_family.get(),
-                                                                      selected_font_size.get(), FONT['weight'])))
-
+# font_size_box.bind('<<ComboboxSelected>>',
+#                    lambda event=None: app_text_editor.configure(font=(selected_font_family.get(),
+#                                                                       selected_font_size.get(), FONT['weight'])))
+font_size_box.bind('<<ComboboxSelected>>', lambda event=None: font_style(which="size"))
 
 def toggle_font_style(_arg):
     """
@@ -642,6 +731,15 @@ def text_alignment(_arg):
 align_left.configure(command=lambda: text_alignment('left'))
 align_center.configure(command=lambda: text_alignment('center'))
 align_right.configure(command=lambda: text_alignment('right'))
+
+# Runs last applied functions
+# - applies last used Theme on program startup
+theme_changer(predefined=(CONFIG.get("THEME", "foreground"), CONFIG.get("THEME", "background")))
+font_style(predefined=(
+    CONFIG.get("EDITOR", "family"), CONFIG.getint("EDITOR", "size"), CONFIG.get("EDITOR", "weight"),
+    CONFIG.get("EDITOR", "slant"), CONFIG.getboolean("EDITOR", "underline"), CONFIG.getboolean("EDITOR", "overstrike")
+))
+# - applies last used Theme on program startup
 
 # Attaches main menu to the application
 app.config(menu=app_menu)
