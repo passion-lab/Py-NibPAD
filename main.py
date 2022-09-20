@@ -18,14 +18,6 @@ PATH_ICON: str = "./icons"
 with open('./contributors/contributors.json', 'r') as json_file:
     CONTRIBUTORS: dict = load(json_file)
 
-FONT: dict = {
-    "family"    : 'Consolas',
-    "size"      : 12,
-    "weight"    : 'normal',
-    "slant"     : 'roman',
-    "underline" : False,
-    "overstrike": False
-}
 FILE_URL: str = ""
 TEXT_MODIFIED: bool = False
 CONFIG = ConfigParser()  # Loads user defined settings
@@ -36,16 +28,14 @@ app = tk.Tk()
 
 # App's Global Variables
 _SCREEN_DIMENSION: tuple = (app.winfo_screenwidth(), app.winfo_screenheight())
-
-
-# _FONT = font.Font(
-#     family=CONFIG.get("EDITOR", "font"),
-#     size=CONFIG.getint("EDITOR", "size"),
-#     weight=CONFIG.get("EDITOR", "weight"),
-#     slant=CONFIG.get("EDITOR", "slant"),
-#     underline=CONFIG.getboolean("EDITOR", "underline"),
-#     overstrike=CONFIG.getboolean("EDITOR", "overstrike")
-# )
+_FONT = font.Font(
+    family="Consolas",
+    size=12,
+    weight="normal",
+    slant="roman",
+    underline=bool(0),
+    overstrike=bool(0)
+)
 
 
 def _display_win_center(
@@ -384,6 +374,7 @@ def theme_changer(predefined: tuple[str, str] | None = None):
         # updates the settings file with the last user choice
         CONFIG.set("THEME", "foreground", text_color)
         CONFIG.set("THEME", "background", background_color)
+        CONFIG.set("EDITOR", "color", text_color)
         with open(APP_SETTINGS, "w") as file:
             CONFIG.write(file)
     else:
@@ -530,7 +521,7 @@ selected_font_family = tk.StringVar()  # to store user selected font family
 # -- combobox
 font_box = ttk.Combobox(app_tool_bar, width=30, textvariable=selected_font_family, state='readonly')
 font_box['value'] = fonts_available
-font_box.current(fonts_available.index(FONT['family']))  # set default font style to 'Consolas' indexed
+font_box.current(fonts_available.index(_FONT['family']))  # set default font style to 'Consolas' indexed
 font_box.grid(row=0, column=0, padx=7, pady=2)
 
 # - FONT SIZE
@@ -539,7 +530,7 @@ selected_font_size = tk.IntVar()  # use to store user selected font size
 # --combobox
 font_size_box = ttk.Combobox(app_tool_bar, width=5, textvariable=selected_font_size)
 font_size_box['values'] = tuple(range(8, 101))  # font sizes manually added
-font_size_box.current(font_size_box['values'].index(str(FONT['size'])))  # set default font size from FONT
+font_size_box.current(font_size_box['values'].index(str(_FONT['size'])))  # set default font size from FONT
 font_size_box.grid(row=0, column=1, padx=7, pady=2)
 
 # - FONT BOLD
@@ -556,6 +547,8 @@ font_italic.grid(row=0, column=3, padx=7, pady=2)
 # -- button
 font_underline = ttk.Button(app_tool_bar, image=icon_underline)
 font_underline.grid(row=0, column=4, padx=7, pady=2)
+
+# TODO: Strikethrough button should be added here
 
 # - FONT COLOR
 # -- button
@@ -579,13 +572,7 @@ align_right.grid(row=0, column=8, padx=7, pady=2)
 
 # \\\ Text Editor       \\\\\\\\\\\\________________________________
 # app_text_editor = tk.Text(app, wrap='word', font=(FONT['family'], FONT['size'], FONT['weight']))
-app_text_editor = tk.Text(app, wrap='word', font=font.Font(
-    family=FONT['family'],
-    size=FONT['size'],
-    weight=FONT['weight'],
-    slant=FONT['slant'],
-    underline=FONT['underline']
-))
+app_text_editor = tk.Text(app, wrap='word', font=_FONT)
 app_text_editor.focus_set()  # for autofocus
 app_text_editor.pack(fill=tk.BOTH, expand=True)
 
@@ -620,126 +607,108 @@ app_text_editor.bind('<<Modified>>', status_bar_update)
 
 # \\\ Toolbar Func      \\\\\\\\\\\\________________________________
 
-def font_style(event=None,
-               which: Literal["family", "size", "weight", "slant", "underline", "overstrike"] = ...,
+def font_style(which: Literal["family", "size", "weight", "slant", "underline", "overstrike"] = ...,
                predefined: tuple[str, int, str, str, bool, bool] | None = None):
-    global FONT
-    print(FONT, "\n")
+    global _FONT
     text_editor_current_font_properties = tk.font.Font(font=app_text_editor['font']).actual()
 
     if predefined is not None:
-        FONT['family'], FONT['size'], FONT['weight'], FONT['slant'], FONT['underline'], \
-            FONT['overstrike'] = predefined
+        _FONT['family'], _FONT['size'], _FONT['weight'], _FONT['slant'], _FONT['underline'], \
+            _FONT['overstrike'] = predefined
+        font_box.current(fonts_available.index(_FONT['family']))
+        font_size_box.current(font_size_box['values'].index(str(_FONT['size'])))
     else:
         match which:
             case "family":
-                FONT['family'] = selected_font_family.get()
+                _FONT['family'] = selected_font_family.get()
                 CONFIG.set("EDITOR", "family", selected_font_family.get())
             case "size":
-                FONT['size'] = selected_font_size.get()
+                _FONT['size'] = selected_font_size.get()
                 CONFIG.set("EDITOR", "size", str(selected_font_size.get()))
             case "weight":
-                FONT['weight'] = "bold" if FONT['weight'] == "normal" else "normal"
-                CONFIG.set("EDITOR", "weight", FONT['weight'])
+                _FONT['weight'] = "bold" if _FONT.actual()['weight'] == "normal" else "normal"
+                CONFIG.set("EDITOR", "weight", _FONT.actual()['weight'])
             case "slant":
-                FONT['slant'] = "italic" if FONT['slant'] == "roman" else "roman"
-                CONFIG.set("EDITOR", "slant", FONT['slant'])
+                _FONT['slant'] = "italic" if _FONT.actual()['slant'] == "roman" else "roman"
+                CONFIG.set("EDITOR", "slant", _FONT.actual()['slant'])
             case "underline":
-                FONT['underline'] = True if FONT['underline'] is not True else False
-                CONFIG.set("EDITOR", "underline", str(FONT['underline']))
+                _FONT['underline'] = 1 if _FONT.actual()['underline'] == 0 else 0
+                CONFIG.set("EDITOR", "underline", str(_FONT.actual()['underline']))
             case "overstrike":
-                FONT['overstrike'] = True if FONT['overstrike'] is not True else False
-                CONFIG.set("EDITOR", "overstrike", str(FONT['overstrike']))
+                _FONT['overstrike'] = 1 if _FONT.actual()['overstrike'] == 0 else 0
+                CONFIG.set("EDITOR", "overstrike", str(_FONT.actual()['overstrike']))
 
         with open(APP_SETTINGS, "w") as file:
             CONFIG.write(file)
 
-    app_text_editor.configure(font=font.Font(
-        font=FONT['family'], size=FONT['size'], weight=FONT['weight'], slant=FONT['slant'],
-        underline=FONT['underline'], overstrike=FONT['overstrike']
-    ))
+    app_text_editor.configure(font=_FONT)
 
 
-font_box.bind('<<ComboboxSelected>>',
-              lambda event=None: app_text_editor.configure(font=(selected_font_family.get(),
-                                                                 selected_font_size.get(), FONT['weight'])))
-# font_size_box.bind('<<ComboboxSelected>>',
-#                    lambda event=None: app_text_editor.configure(font=(selected_font_family.get(),
-#                                                                       selected_font_size.get(), FONT['weight'])))
+font_box.bind('<<ComboboxSelected>>', lambda event=None: font_style(which="family"))
 font_size_box.bind('<<ComboboxSelected>>', lambda event=None: font_style(which="size"))
-
-def toggle_font_style(_arg):
-    """
-    Use to toggle font styles of the text box.
-
-    :param _arg: 'bold', 'italic', 'underline'
-    :type _arg: str
-    :return: Makes text style to be bold, italic or underline
-    :rtype: None
-    """
-
-    global FONT
-    text_editor_current_font_properties = tk.font.Font(font=app_text_editor['font']).actual()
-    if _arg == 'bold':
-        FONT['weight'] = 'bold' if text_editor_current_font_properties['weight'] == 'normal' else 'normal'
-        # app_text_editor.configure(font=(selected_font_family.get(), selected_font_size.get(), FONT['weight']))
-    if _arg == 'italic':
-        FONT['slant'] = 'italic' if text_editor_current_font_properties['slant'] == 'roman' else 'normal'
-        # app_text_editor.configure(font=(selected_font_family.get(), selected_font_size.get(), FONT['slant']))
-    if _arg == 'underline':
-        FONT['underline'] = 'underline' if text_editor_current_font_properties['underline'] == 0 else 'normal'
-
-    app_text_editor.configure(font=(
-        selected_font_family.get(),
-        selected_font_size.get(),
-        FONT['weight'] if _arg == 'bold' else FONT['slant'] if _arg == 'italic' else FONT['underline'])
-    )
+font_bold.configure(command=lambda: font_style(which="weight"))
+font_italic.configure(command=lambda: font_style(which="slant"))
+font_underline.configure(command=lambda: font_style(which="underline"))
+# TODO: Strikethrough button's functionality would be added here
 
 
-font_bold.configure(command=lambda: toggle_font_style('bold'))
-font_italic.configure(command=lambda: toggle_font_style('italic'))
-font_underline.configure(command=lambda: toggle_font_style('underline'))
+def font_color_chooser(predefined: str | None = None):
+    if predefined is None:
+        _foreground = tk.colorchooser.askcolor()
+        if _foreground[1] is not None:
+            app_text_editor.configure(fg=_foreground[1])
 
-
-def font_color_chooser():
-    _foreground = tk.colorchooser.askcolor()
-    app_text_editor.configure(fg=_foreground[1]) if _foreground is not None else None
+            CONFIG.set("EDITOR", "color", _foreground[1])
+            with open(APP_SETTINGS, "w") as file:
+                CONFIG.write(file)
+    else:
+        _foreground = predefined
+        app_text_editor.configure(fg=_foreground)
 
 
 font_color.configure(command=font_color_chooser)
 
 
-def text_alignment(_arg):
+def text_alignment(align: Literal["left", "center", "right"]):
     """
     Use to set text alignment.
 
-    :param _arg: left, right or center
-    :type _arg: str
+    :param predefined:
+    :type predefined:
+    :param align: left, right or center
+    :type align: str
     :return: Makes entered text to be left, center or right aligned
     :rtype: None
     """
-
     text_content = app_text_editor.get(1.0, 'end')
     app_text_editor.tag_config(
-        _arg,
-        justify=tk.LEFT if _arg == 'left' else tk.CENTER if _arg == 'center' else tk.RIGHT
+        align,
+        justify=tk.LEFT if align == 'left' else tk.CENTER if align == 'center' else tk.RIGHT
     )
     app_text_editor.delete(1.0, 'end')
-    app_text_editor.insert(tk.INSERT, text_content, _arg)
+    app_text_editor.insert(tk.INSERT, text_content, align)
+
+    CONFIG.set("EDITOR", "align", align)
+    with open(APP_SETTINGS, "w") as file:
+        CONFIG.write(file)
 
 
-align_left.configure(command=lambda: text_alignment('left'))
-align_center.configure(command=lambda: text_alignment('center'))
-align_right.configure(command=lambda: text_alignment('right'))
+align_left.configure(command=lambda: text_alignment(align='left'))
+align_center.configure(command=lambda: text_alignment(align='center'))
+align_right.configure(command=lambda: text_alignment(align='right'))
 
 # Runs last applied functions
 # - applies last used Theme on program startup
 theme_changer(predefined=(CONFIG.get("THEME", "foreground"), CONFIG.get("THEME", "background")))
+# - applies last used Font Style on program startup
 font_style(predefined=(
     CONFIG.get("EDITOR", "family"), CONFIG.getint("EDITOR", "size"), CONFIG.get("EDITOR", "weight"),
-    CONFIG.get("EDITOR", "slant"), CONFIG.getboolean("EDITOR", "underline"), CONFIG.getboolean("EDITOR", "overstrike")
+    CONFIG.get("EDITOR", "slant"), CONFIG.getint("EDITOR", "underline"), CONFIG.getint("EDITOR", "overstrike")
 ))
-# - applies last used Theme on program startup
+# - applies last used Font Color on program startup
+font_color_chooser(predefined=CONFIG.get("EDITOR", "color"))
+# - applies last used Text Align on program startup
+text_alignment(align=CONFIG.get("EDITOR", "align"))
 
 # Attaches main menu to the application
 app.config(menu=app_menu)
@@ -753,9 +722,9 @@ app.bind('<Control-w>', exit_app)
 app.bind('<Control-Delete>', lambda event=None: app_text_editor.delete(1.0, tk.END))
 app.bind('<Control-f>', find_replace)
 app.bind('<F1>', about_app)
-app.bind('<Control-b>', lambda event=None: toggle_font_style('bold'))
-app.bind('<Control-i>', lambda event=None: toggle_font_style('italic'))
-app.bind('<Control-u>', lambda event=None: toggle_font_style('underline'))
+app.bind('<Control-b>', lambda event=None: font_style(which='weight'))
+app.bind('<Control-i>', lambda event=None: font_style(which='slant'))
+app.bind('<Control-u>', lambda event=None: font_style(which='underline'))
 app.bind('<Control-l>', lambda event=None: text_alignment('left'))
 app.bind('<Control-e>', lambda event=None: text_alignment('center'))
 app.bind('<Control-r>', lambda event=None: text_alignment('right'))
