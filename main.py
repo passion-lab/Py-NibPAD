@@ -91,6 +91,12 @@ icon_files_tool = [file for file in listdir(f'{PATH_ICON}/tool/')]
 icon_align_center, icon_align_left, icon_align_right, icon_bold, icon_font_color, icon_font_size, \
 icon_italic, icon_underline = [tk.PhotoImage(file=f'{PATH_ICON}/tool/{file}') for file in icon_files_tool]
 
+# - Status bar icons
+icon_files_status = [file for file in listdir(f'{PATH_ICON}/status/')]
+icon_edit_running, icon_edit_yet, icon_save_modified, icon_save_not, icon_save_yes, \
+icon_typing_no, icon_typing_yes \
+    = [tk.PhotoImage(file=f'{PATH_ICON}/status/{file}') for file in icon_files_status]
+
 # - About icons
 icon_files_about = [file for file in listdir(f'{PATH_ICON}/about/')]
 icon_cc, icon_creator, icon_github, icon_mail, icon_organization, icon_share, icon_telegram, icon_version, \
@@ -203,10 +209,13 @@ def find_replace(event=None):
     dialog_box.title("Find & Replace")
     dialog_box.geometry('450x200+400+200')
     dialog_box.resizable(False, False)
+    # Configuring styles for ttk.LabelFrame (default: applies to all),
+    # ...to use a style for a specific element name as <{newName}.{TLabelframe}>
+    styles = ttk.Style()
 
     # Find function
     def find(e=None):
-        what = find_entry_box.get()
+        what = find_entry.get()
         app_text_editor.tag_remove('match', 1.0, tk.END)
         match_found = 0
         if what:
@@ -214,8 +223,9 @@ def find_replace(event=None):
             while True:
                 start_position = app_text_editor.search(what, start_position, tk.END)
                 if not start_position:
-                    messagebox.showinfo(title="Not Found",
-                                        message=f"NO MATCH FOUND!\nSorry, your search query '{what}' is not found.")
+                    # TODO: Messagebox should be shown while not finding any search query
+                    # messagebox.showinfo(title="Not Found",
+                    #                     message=f"NO MATCH FOUND!\nSorry, your search query '{what}' is not found.")
                     return None
                 end_position = f'{start_position}+{len(what)}c'
                 app_text_editor.tag_add('match', start_position, end_position)
@@ -225,8 +235,8 @@ def find_replace(event=None):
 
     # Replace function
     def replace(e=None):
-        what = find_entry_box.get()
-        by_which = replace_entry_box.get()
+        what = find_entry.get()
+        by_which = replace_entry.get()
         text_content = app_text_editor.get(1.0, tk.END)
         replaced_text_content = text_content.replace(what, by_which)
         app_text_editor.delete(1.0, tk.END)
@@ -237,32 +247,45 @@ def find_replace(event=None):
         app_text_editor.tag_remove('match', 1.0, tk.END)
         dialog_box.destroy()
 
+    styles.configure('window_frame.TFrame', background="white")
+    styles.configure('entry_frame.TLabelframe', background="white")  # specified for entry_frame
+    styles.configure('entry_frame.TLabelframe.Label', background="white")  # specified for label of entry_frame
+    styles.configure('button_frame.TFrame', background="#eeeeee")
+
     # Label frame
-    frame = ttk.LabelFrame(dialog_box, text='Find and Replace')
-    frame.pack(pady=20, padx=10)
+    window = ttk.Frame(dialog_box, style='window_frame.TFrame')
+    window.pack(fill=tk.BOTH, expand=True)
+    entry_frame = ttk.LabelFrame(window, text=' Find and Replace ', style='entry_frame.TLabelframe')
+    entry_frame.pack(pady=20, padx=10)
+    entry_frame.columnconfigure(0, weight=1, minsize=100)
+    entry_frame.columnconfigure(1, weight=3)
 
     # Find & Replace label
-    ttk.Label(frame, text='Find what   ').grid(row=0, column=0, pady=8)
-    ttk.Label(frame, text='Replace with').grid(row=1, column=0, pady=8)
+    ttk.Label(entry_frame, text='Find what?', background="white").grid(row=0, column=0, sticky="w",
+                                                                       padx=(20, 10), pady=(15, 10))
+    find_entry = ttk.Entry(entry_frame, width=30)
+    find_entry.grid(row=0, column=1, columnspan=2, sticky="ew", padx=(10, 30), pady=(15, 10))
+    find_entry.focus_set()
 
-    # Find and Replace entry boxes
-    find_entry_box = ttk.Entry(frame, width=30)
-    find_entry_box.grid(row=0, column=1, padx=20)
-    find_entry_box.focus_set()
-    find_entry_box.bind('<KeyRelease>', lambda e=None: find_button.configure(state='enabled') \
-        if find_entry_box.get() else find_button.configure(state='disabled'))
-    replace_entry_box = ttk.Entry(frame, width=30)
-    replace_entry_box.grid(row=1, column=1, padx=20)
-    replace_entry_box.bind('<KeyRelease>', lambda e=None: replace_button.configure(state='enabled') \
-        if find_entry_box.get() and replace_entry_box.get() else replace_button.configure(state='disabled'))
+    ttk.Label(entry_frame, text='Replace with:', background="white").grid(row=1, column=0, padx=(20, 10),
+                                                                          pady=(0, 20), sticky="w")
+    replace_entry = ttk.Entry(entry_frame, width=30)
+    replace_entry.grid(row=1, column=1, columnspan=2, sticky="ew", padx=(10, 30), pady=(0, 20))
 
-    # Find & Replace button
-    find_button = ttk.Button(frame, text="Find It", state="disabled", command=find)
-    find_button.grid(row=2, column=1, pady=40, ipadx=5, padx=0, ipady=2)
-    replace_button = ttk.Button(frame, text="Replace", state="disabled", command=replace)
-    replace_button.grid(row=2, column=1, pady=20, ipadx=5, ipady=2)
-    cancel_button = ttk.Button(frame, text="Cancel", command=close)
-    cancel_button.grid(row=2, column=0, pady=20, ipadx=5, ipady=2)
+    find_entry.bind('<KeyRelease>', lambda e=None: find_button.configure(state='enabled') \
+        if find_entry.get() else find_button.configure(state='disabled'))
+    replace_entry.bind('<KeyRelease>', lambda e=None: replace_button.configure(state='enabled') \
+        if find_entry.get() and replace_entry.get() else replace_button.configure(state='disabled'))
+
+    button_frame = ttk.Frame(window, style='button_frame.TFrame')
+    button_frame.pack(side=tk.BOTTOM, fill=tk.BOTH)
+
+    cancel_button = ttk.Button(button_frame, text="Cancel", command=close)
+    cancel_button.pack(side=tk.LEFT, ipadx=5, ipady=2, pady=8, padx=(20, 0))
+    replace_button = ttk.Button(button_frame, text="Replace", state="disabled", command=replace)
+    replace_button.pack(side=tk.RIGHT, ipadx=5, ipady=2, pady=8, padx=(0, 20))
+    find_button = ttk.Button(button_frame, text="Find It", state="disabled", command=find)
+    find_button.pack(side=tk.RIGHT, ipadx=5, ipady=2, pady=8, padx=3)
 
     # Binds shortcut keys to the find dialog box
     dialog_box.bind('<Return>', find)
@@ -583,11 +606,22 @@ text_editor_scroll_bar.config(command=app_text_editor.yview)
 app_text_editor.config(yscrollcommand=text_editor_scroll_bar.set)
 
 # \\\ Status Bar        \\\\\\\\\\\\________________________________
-app_status_bar = tk.Frame(app)
+app_status_bar = tk.Frame(app, bg="white")
 app_status_bar.pack(side=tk.BOTTOM, fill=tk.X)
 
-writing_statistics = tk.Label(app_status_bar, text="Characters: 0 | Words: 0")
-writing_statistics.pack(side=tk.LEFT)
+statistics_frame = tk.Frame(app_status_bar, bg="white")
+statistics_frame.pack(side=tk.LEFT)
+writing_statistics = tk.Label(statistics_frame, text="Characters: 0 | Words: 0", bg="white")
+writing_statistics.pack()
+
+edit_save_frame = tk.Frame(app_status_bar, bg="white")
+edit_save_frame.pack(side=tk.RIGHT)
+edit_status = tk.Label(edit_save_frame, image=icon_edit_yet, bg="white")
+edit_status.pack(side=tk.LEFT, ipady=1, padx=(0, 5))
+typing_status = tk.Label(edit_save_frame, image=icon_typing_no, bg="white")
+typing_status.pack(side=tk.LEFT, ipady=1, padx=(0, 0))
+save_status = tk.Label(edit_save_frame, image=icon_save_not, bg="white")
+save_status.pack(side=tk.LEFT, ipady=1, padx=(0, 5))
 
 
 def status_bar_update(event=None):
@@ -603,6 +637,9 @@ def status_bar_update(event=None):
 
 
 app_text_editor.bind('<<Modified>>', status_bar_update)
+# app_text_editor.bind('<<Modified>>', realtime, add="+")
+app_text_editor.bind('<KeyPress>', lambda event=None: typing_status.configure(image=icon_typing_yes))
+app_text_editor.bind('<KeyRelease>', lambda event=None: typing_status.configure(image=icon_typing_no))
 
 
 # \\\ Toolbar Func      \\\\\\\\\\\\________________________________
@@ -614,7 +651,7 @@ def font_style(which: Literal["family", "size", "weight", "slant", "underline", 
 
     if predefined is not None:
         _FONT['family'], _FONT['size'], _FONT['weight'], _FONT['slant'], _FONT['underline'], \
-            _FONT['overstrike'] = predefined
+        _FONT['overstrike'] = predefined
         font_box.current(fonts_available.index(_FONT['family']))
         font_size_box.current(font_size_box['values'].index(str(_FONT['size'])))
     else:
@@ -649,6 +686,8 @@ font_size_box.bind('<<ComboboxSelected>>', lambda event=None: font_style(which="
 font_bold.configure(command=lambda: font_style(which="weight"))
 font_italic.configure(command=lambda: font_style(which="slant"))
 font_underline.configure(command=lambda: font_style(which="underline"))
+
+
 # TODO: Strikethrough button's functionality would be added here
 
 
@@ -708,7 +747,8 @@ font_style(predefined=(
 # - applies last used Font Color on program startup
 font_color_chooser(predefined=CONFIG.get("EDITOR", "color"))
 # - applies last used Text Align on program startup
-text_alignment(align=CONFIG.get("EDITOR", "align"))
+# TODO: Have to fix pre-writing alignment error
+# text_alignment(align=CONFIG.get("EDITOR", "align"))
 
 # Attaches main menu to the application
 app.config(menu=app_menu)
