@@ -547,7 +547,6 @@ selected_font_family = tk.StringVar()  # to store user selected font family
 font_box = ttk.Combobox(app_tool_bar, width=30, textvariable=selected_font_family, state='readonly')
 font_box['value'] = fonts_available
 font_box.current(fonts_available.index(_FONT['family']))  # set default font style to 'Consolas' indexed
-# font_box.grid(row=0, column=0, padx=7, pady=2)
 font_box.pack(side=tk.LEFT, padx=(7, 2))
 
 # - FONT SIZE
@@ -563,25 +562,21 @@ selected_font_size = tk.IntVar()  # use to store user selected font size
 font_size_box = ttk.Combobox(app_tool_bar, width=5, textvariable=selected_font_size)
 font_size_box['values'] = tuple(range(8, 101))  # font sizes manually added
 font_size_box.current(font_size_box['values'].index(str(_FONT['size'])))  # set default font size from FONT
-# font_size_box.grid(row=0, column=1, padx=7, pady=2)
 font_size_box.pack(side=tk.LEFT, padx=(0, 5))
 
 # - FONT BOLD
 # -- button
 font_bold = ttk.Button(app_tool_bar, image=icon_bold)
-# font_bold.grid(row=0, column=2, padx=7, pady=2)
 font_bold.pack(side=tk.LEFT, padx=0)
 
 # - FONT ITALIC
 # -- button
 font_italic = ttk.Button(app_tool_bar, image=icon_italic)
-# font_italic.grid(row=0, column=3, padx=7, pady=2)
 font_italic.pack(side=tk.LEFT, padx=0)
 
 # - FONT UNDERLINE
 # -- button
 font_underline = ttk.Button(app_tool_bar, image=icon_underline)
-# font_underline.grid(row=0, column=4, padx=7, pady=2)
 font_underline.pack(side=tk.LEFT, padx=0)
 
 # TODO: Strikethrough button should be added here
@@ -589,25 +584,21 @@ font_underline.pack(side=tk.LEFT, padx=0)
 # - FONT COLOR
 # -- button
 font_color = ttk.Button(app_tool_bar, image=icon_font_color)
-# font_color.grid(row=0, column=5, padx=7, pady=2)
 font_color.pack(side=tk.LEFT, padx=(5, 0))
 
 # - ALIGN LEFT
 # -- button
 align_left = ttk.Button(app_tool_bar, image=icon_align_left)
-# align_left.grid(row=0, column=6, padx=7, pady=2)
 align_left.pack(side=tk.LEFT, padx=(5, 0))
 
 # - ALIGN CENTER
 # -- button
 align_center = ttk.Button(app_tool_bar, image=icon_align_center)
-# align_center.grid(row=0, column=7, padx=7, pady=2)
 align_center.pack(side=tk.LEFT, padx=0)
 
 # - ALIGN RIGHT
 # -- button
 align_right = ttk.Button(app_tool_bar, image=icon_align_right)
-# align_right.grid(row=0, column=8, padx=7, pady=2)
 align_right.pack(side=tk.LEFT, padx=0)
 
 # \\\ Text Editor       \\\\\\\\\\\\________________________________
