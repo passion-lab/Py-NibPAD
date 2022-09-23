@@ -421,7 +421,9 @@ def about_app(event=None):
     about_window = tk.Toplevel(app)
     about_window.geometry(_display_win_center(about_window, (500, 320), (APP_DIMENSION[0], APP_DIMENSION[1])))
     about_window.resizable(False, False)
-    about_window.overrideredirect(True)
+    # about_window.overrideredirect(True)
+    about_window.title(APP_NAME + " - All about it!")
+    about_window.wm_iconbitmap("./NibPAD.ico")
 
     def close(e=None):
         app.attributes('-alpha', 1)
@@ -459,7 +461,9 @@ def about_app(event=None):
     tk.Label(right_frame, bg="white", cursor="hand2", text="t.me/...").grid(row=8, column=1, sticky="w")
 
     about_window.bind('<Escape>', close)
-    app.attributes('-alpha', 0.8)
+    about_window.protocol("WM_DELETE_WINDOW", close)
+    about_window.protocol("WM_MINIMIZE_WINDOW", close)
+    # app.attributes('-alpha', 0.8)
     about_window.mainloop()
 
 
@@ -467,7 +471,9 @@ def acknowledgement(event=None):
     window = tk.Toplevel(app)
     window.geometry(_display_win_center(window, (600, 320), (APP_DIMENSION[0], APP_DIMENSION[1])))
     window.resizable(False, False)
-    window.overrideredirect(True)
+    # window.overrideredirect(True)
+    window.title(APP_NAME + " - Why did it?")
+    window.wm_iconbitmap("./NibPAD.ico")
 
     def close(e=None):
         app.attributes('-alpha', 1)
@@ -484,10 +490,8 @@ def acknowledgement(event=None):
 
     entry_frame = tk.Frame(frame, borderwidth=1, bg="white",
                            highlightcolor=COLOR_PRI, highlightbackground=COLOR_PRI, highlightthickness=1)
-    # entry_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True, padx=30, pady=20)
     entry_frame.grid(row=2, pady=20, padx=30, sticky="ew")
 
-    buttons = []
     for i, thank in enumerate(CONTRIBUTORS['thanks']):
         # reduces url length if defined total length exceeds
         total_len = 70
@@ -505,27 +509,21 @@ def acknowledgement(event=None):
         tk.Label(globals()[f"row{i}"], image=icon_contributors[i], fg="grey", bg="white").pack(side=tk.LEFT)
         tk.Label(globals()[f"row{i}"], text=f"{thank['to']}", fg="black", bg="white").pack(side=tk.LEFT)
         tk.Label(globals()[f"row{i}"], text=f"({thank['for']})", fg="darkgrey", bg="white").pack(side=tk.LEFT)
-        globals()[f"button{i}"] = tk.Label(globals()[f"row{i}"], image=icon_link, fg="grey", bg="white", cursor="hand2")
-        globals()[f"button{i}"].pack(side=tk.LEFT)
-        # globals()[f"button{i}"].bind("<Button-1>", lambda e=None: open_new_tab(thank['url']))
-        buttons.append([globals()[f"button{i}"], thank['url']])
+        tk.Label(globals()[f"row{i}"], image=icon_link, fg="grey", bg="white", cursor="hand2").pack(side=tk.LEFT)
         tk.Label(globals()[f"row{i}"], text=f"{url_text}", fg="grey", bg="white", cursor="hand2").pack(side=tk.LEFT)
 
     # TODO: Functions should be improved to open specific link on a specific button
-    # link opener events
-    for button in buttons:
-        pass
-        # button[0].bind("<Button-1>", lambda e=None: window.clipboard_append(button[1]))
 
     window.bind('<Escape>', close)
-    app.attributes('-alpha', 0.8)
+    window.protocol("WM_DELETE_WINDOW", close)
+    # app.attributes('-alpha', 0.8)
     window.mainloop()
 
 
 # -- options
-help_option.add_command(label="  About NibPAD", image=icon_about, compound=tk.LEFT, command=about_app, accelerator="F1")
 help_option.add_command(label="  Acknowledgement", image=icon_acknowledge, compound=tk.LEFT, command=acknowledgement,
                         accelerator="")
+help_option.add_command(label="  About NibPAD", image=icon_about, compound=tk.LEFT, command=about_app, accelerator="F1")
 
 # - cascade menus
 app_menu.add_cascade(label='File', menu=file)
