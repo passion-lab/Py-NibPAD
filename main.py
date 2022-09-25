@@ -6,6 +6,7 @@ from webbrowser import open_new_tab
 from os import listdir, path, getcwd
 from typing import Literal
 from configparser import ConfigParser
+from datetime import datetime
 from json import load
 
 # Global Variables
@@ -135,6 +136,8 @@ def open_file(event=None):
             app_text_editor.delete(1.0, 'end')
             app_text_editor.insert(1.0, opened_file.read())
             app.title(f"{path.basename(FILE_URL)} - {APP_NAME}")
+            save_status.configure(image=icon_save_yes)
+            edit_status.configure(image=icon_edit_yet)
     except FileNotFoundError:
         pass
     except:
@@ -449,12 +452,15 @@ def about_app(event=None):
     tk.Label(right_frame, bg="white", image=icon_creator).grid(row=2, column=0, sticky="w")
     tk.Label(right_frame, bg="white").grid(row=3, padx=1)
     tk.Label(right_frame, bg="white", image=icon_github).grid(row=4, column=0, sticky="w")
-    tk.Label(right_frame, bg="white", cursor="hand2", text="@Passion-Lab").grid(row=4, column=1, sticky="w")
+    _link_github = tk.Label(right_frame, bg="white", cursor="hand2", text="@Passion-Lab")
+    _link_github.grid(row=4, column=1, sticky="w")
+    _link_github.bind('<Button-1>', lambda e=None: open_new_tab("https://github.com/passion-lab"))
     tk.Label(right_frame, bg="white", image=icon_website).grid(row=5, column=0, sticky="w")
     tk.Label(right_frame, bg="white", cursor="hand2", text="github.com/nibpad.html").grid(row=5, column=1, sticky="w")
     tk.Label(right_frame, bg="white", image=icon_mail).grid(row=6, column=0, sticky="w")
-    tk.Label(right_frame, bg="white", cursor="hand2", text="connect.subhankar@protonmail.com").grid(row=6, column=1,
-                                                                                                    sticky="w")
+    _link_email = tk.Label(right_frame, bg="white", cursor="hand2", text="connect.subhankar@protonmail.com")
+    _link_email.grid(row=6, column=1, sticky="w")
+    _link_email.bind('<Button-1>', lambda e=None: open_new_tab("mailto://connect.subhankar@protonmail.com"))
     tk.Label(right_frame, bg="white", image=icon_whatsapp).grid(row=7, column=0, sticky="w")
     tk.Label(right_frame, bg="white", cursor="hand2", text="wa.me/...").grid(row=7, column=1, sticky="w")
     tk.Label(right_frame, bg="white", image=icon_telegram).grid(row=8, column=0, sticky="w")
@@ -521,6 +527,15 @@ def acknowledgement(event=None):
 
 
 # -- options
+help_option.add_command(label=f"  Introducing {APP_NAME}")
+help_option.add_command(label="  How to get most of it?")
+help_option.add_separator()
+help_option.add_command(label="  License information")
+help_option.add_separator()
+help_option.add_command(label="  Get in touch...")
+help_option.add_command(label="  Welcome for any contribution...")
+help_option.add_command(label="  Report bugs or issues...")
+help_option.add_separator()
 help_option.add_command(label="  Acknowledgement", image=icon_acknowledge, compound=tk.LEFT, command=acknowledgement,
                         accelerator="")
 help_option.add_command(label="  About NibPAD", image=icon_about, compound=tk.LEFT, command=about_app, accelerator="F1")
@@ -530,7 +545,7 @@ app_menu.add_cascade(label='File', menu=file)
 app_menu.add_cascade(label='Edit', menu=edit)
 app_menu.add_cascade(label='View', menu=view)
 app_menu.add_cascade(label='Themes', menu=theme)
-app_menu.add_cascade(label="Help", menu=help_option)
+app_menu.add_cascade(label='Help', menu=help_option)
 
 # \\\ Toolbar           \\\\\\\\\\\\________________________________
 # Defining ttk styles
@@ -602,7 +617,6 @@ align_right = ttk.Button(app_tool_bar, image=icon_align_right)
 align_right.pack(side=tk.LEFT, padx=0)
 
 # \\\ Text Editor       \\\\\\\\\\\\________________________________
-# app_text_editor = tk.Text(app, wrap='word', font=(FONT['family'], FONT['size'], FONT['weight']))
 app_text_editor = tk.Text(app, wrap='word', font=_FONT)
 app_text_editor.focus_set()  # for autofocus
 app_text_editor.pack(fill=tk.BOTH, expand=True)
@@ -612,6 +626,19 @@ text_editor_scroll_bar = tk.Scrollbar(app_text_editor)
 text_editor_scroll_bar.pack(side=tk.RIGHT, fill=tk.Y)
 text_editor_scroll_bar.config(command=app_text_editor.yview)
 app_text_editor.config(yscrollcommand=text_editor_scroll_bar.set)
+
+# - CONTEXT POP-UP MENU
+text_editor_context_menu = tk.Menu(app_text_editor, tearoff=False)
+text_editor_context_menu.add_command(label="Copy", command=lambda: app_text_editor.event_generate('<Control c>'))
+text_editor_context_menu.add_command(label="Cut", command=lambda: app_text_editor.event_generate('<Control x>'))
+text_editor_context_menu.add_command(label="Paste", command=lambda: app_text_editor.event_generate('<Control v>'))
+text_editor_context_menu.add_command(label="Clear all", command=lambda: app_text_editor.delete(1.0, tk.END))
+text_editor_context_menu.add_separator()
+text_editor_context_menu.add_command(label="Select all", command=lambda: app_text_editor.event_generate('<Control a>'))
+text_editor_context_menu.add_separator()
+# TODO: Date time insertion should be improved
+text_editor_context_menu.add_command(label="Insert Date/Time",
+                                     command=lambda: app_text_editor.insert(tk.CURRENT, str(datetime.now())))
 
 # \\\ Status Bar        \\\\\\\\\\\\________________________________
 app_status_bar = tk.Frame(app, bg="white")
@@ -651,6 +678,7 @@ app_text_editor.bind('<KeyRelease>', lambda event=None: typing_status.configure(
 
 
 # \\\ Toolbar Func      \\\\\\\\\\\\________________________________
+
 
 def font_style(which: Literal["family", "size", "weight", "slant", "underline", "overstrike"] = ...,
                predefined: tuple[str, int, str, str, bool, bool] | None = None):
@@ -776,6 +804,7 @@ app.bind('<Control-u>', lambda event=None: font_style(which='underline'))
 app.bind('<Control-l>', lambda event=None: text_alignment('left'))
 app.bind('<Control-e>', lambda event=None: text_alignment('center'))
 app.bind('<Control-r>', lambda event=None: text_alignment('right'))
+app_text_editor.bind('<Button-3>', lambda event: text_editor_context_menu.tk_popup(event.x_root, event.y_root))
 
 app.protocol("WM_DELETE_WINDOW", exit_app)  # app exit button function
 app.mainloop()
