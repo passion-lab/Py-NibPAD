@@ -124,7 +124,9 @@ def new_file(event=None):
     global FILE_URL
     app_text_editor.delete(1.0, 'end')
     FILE_URL = ""
-    app.title(f"untitled - {APP_NAME}")
+    app.title(f"Untitled - {APP_NAME}")
+    save_status.configure(image=icon_save_not)
+    edit_status.configure(image=icon_edit_yet)
 
 
 def open_file(event=None):
@@ -152,7 +154,8 @@ def save_file(event=None):
         if FILE_URL:
             with open(FILE_URL, 'w', encoding='utf-8') as file_to_save:
                 file_to_save.write(text_content)
-                # app.title(path.basename(FILE_URL))
+                save_status.configure(image=icon_save_yes)
+                edit_status.configure(image=icon_edit_yet)
                 return True
         else:
             with filedialog.asksaveasfile(mode='w', defaultextension='*.txt',
@@ -521,10 +524,12 @@ def acknowledgement(event=None):
         tk.Label(globals()[f"row{i}"], image=icon_contributors[i], fg="grey", bg="white").pack(side=tk.LEFT)
         tk.Label(globals()[f"row{i}"], text=f"{thank['to']}", fg="black", bg="white").pack(side=tk.LEFT)
         tk.Label(globals()[f"row{i}"], text=f"({thank['for']})", fg="darkgrey", bg="white").pack(side=tk.LEFT)
-        tk.Label(globals()[f"row{i}"], image=icon_link, fg="grey", bg="white", cursor="hand2").pack(side=tk.LEFT)
-        tk.Label(globals()[f"row{i}"], text=f"{url_text}", fg="grey", bg="white", cursor="hand2").pack(side=tk.LEFT)
-
-    # TODO: Functions should be improved to open specific link on a specific button
+        b1 = tk.Label(globals()[f"row{i}"], image=icon_link, fg="grey", bg="white", cursor="hand2")
+        b1.pack(side=tk.LEFT)
+        b1.bind('<Button-1>', lambda e=None, link=thank['url']: open_new_tab(link))
+        b2 = tk.Label(globals()[f"row{i}"], text=f"{url_text}", fg="grey", bg="white", cursor="hand2")
+        b2.pack(side=tk.LEFT)
+        b2.bind('<Button-1>', lambda e=None, link=thank['url']: open_new_tab(link))
 
     window.bind('<Escape>', close)
     window.protocol("WM_DELETE_WINDOW", close)

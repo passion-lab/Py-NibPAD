@@ -1,0 +1,1 @@
+pyinstaller --name "NibPAD" --icon "NibPAD.ico" --add-data "LICENSE;." --add-data "NibPAD.ico;." --add-data "README.md;." --add-data "requirements.txt;." --add-data "settings.ini;." --add-data "contributors;contributors" --add-data "icons;icons" --windowed main.py
